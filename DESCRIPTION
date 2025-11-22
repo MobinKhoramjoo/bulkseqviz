@@ -13,4 +13,10 @@ BugReports: https://github.com/MobinKhoramjoo/bulkseqviz/issues
 Imports: 
     DESeq2,
     dplyr,
-    ggplot2
+    ggplot2,
+    paletteer,
+    tibble,
+    tidyr
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
