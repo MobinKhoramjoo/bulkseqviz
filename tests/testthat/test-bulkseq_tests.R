@@ -66,3 +66,35 @@ test_that("PCA 3D plot runs without error", {
   p <- plot_pca_3d(obj, color_by = "cond")
   expect_s3_class(p, "plotly")
 })
+
+test_that("UMAP plot runs without error", {
+  # UMAP requires slightly more data to avoid errors about 'n_neighbors'
+  n_genes <- 2000
+  n_samples <- 20 # Increased samples for UMAP stability
+  cnts <- matrix(sample(10:1000, n_genes * n_samples, replace=TRUE), ncol = n_samples)
+  colnames(cnts) <- paste0("S", 1:n_samples)
+  rownames(cnts) <- paste0("Gene", 1:n_genes)
+  meta <- data.frame(cond = rep(c("A", "B"), each = 10))
+  rownames(meta) <- colnames(cnts)
+
+  obj <- create_bulkseqvis_object(cnts, meta)
+  p <- plot_umap_2d(obj, color_by = "cond")
+  expect_s3_class(p, "ggplot")
+})
+
+test_that("t-SNE plot runs without error", {
+  # t-SNE needs N > perplexity * 3 + 1 generally
+  n_genes <- 2000
+  n_samples <- 30
+  cnts <- matrix(sample(10:1000, n_genes * n_samples, replace=TRUE), ncol = n_samples)
+  colnames(cnts) <- paste0("S", 1:n_samples)
+  rownames(cnts) <- paste0("Gene", 1:n_genes)
+  meta <- data.frame(cond = rep(c("A", "B", "C"), each = 10))
+  rownames(meta) <- colnames(cnts)
+
+  obj <- create_bulkseqvis_object(cnts, meta)
+
+  # Note: perplexity automatically adjusts in our function if N is small
+  p <- plot_tsne_2d(obj, color_by = "cond")
+  expect_s3_class(p, "ggplot")
+})

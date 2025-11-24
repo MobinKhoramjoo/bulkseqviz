@@ -23,9 +23,11 @@ Imports:
     plotly,
     RColorBrewer,
     rgl,
+    Rtsne,
     SummarizedExperiment,
     tibble,
-    tidyr
+    tidyr,
+    umap
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
