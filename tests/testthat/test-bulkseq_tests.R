@@ -98,3 +98,32 @@ test_that("t-SNE plot runs without error", {
   p <- plot_tsne_2d(obj, color_by = "cond")
   expect_s3_class(p, "ggplot")
 })
+
+test_that("DE analysis runs without error", {
+  # Generate synthetic data
+  # We need replicates to run DESeq2 successfully
+  n_genes <- 1000
+  n_samples <- 6
+  # Ensure counts are integers for DESeq2
+  cnts <- matrix(as.integer(sample(10:1000, n_genes * n_samples, replace=TRUE)), ncol = n_samples)
+  colnames(cnts) <- paste0("S", 1:n_samples)
+  rownames(cnts) <- paste0("Gene", 1:n_genes)
+
+  meta <- data.frame(condition = rep(c("Control", "Treat"), each = 3))
+  rownames(meta) <- colnames(cnts)
+
+  obj <- create_bulkseqvis_object(cnts, meta)
+
+  # Run DE (skip BioMart for testing to avoid internet deps)
+  obj <- DEG(obj,
+             design_col = "condition",
+             compare_levels = c("Treat", "Control"),
+             biomart_dataset = NULL) # Skip annotation
+
+  # Check if results were stored
+  expect_true("Treat_vs_Control" %in% names(obj$DE_results))
+
+  res <- obj$DE_results[["Treat_vs_Control"]]
+  expect_true("log2FoldChange" %in% colnames(res))
+  expect_true("padj" %in% colnames(res))
+})

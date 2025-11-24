@@ -11,8 +11,10 @@ RoxygenNote: 7.3.3
 URL: https://github.com/MobinKhoramjoo/bulkseqviz
 BugReports: https://github.com/MobinKhoramjoo/bulkseqviz/issues
 Imports: 
+    biomaRt,
     DESeq2,
     dplyr,
+    edgeR,
     ggforce,
     ggplot2,
     ggthemes,
@@ -23,7 +25,9 @@ Imports:
     plotly,
     RColorBrewer,
     rgl,
+    rlang,
     Rtsne,
+    stringr,
     SummarizedExperiment,
     tibble,
     tidyr,
