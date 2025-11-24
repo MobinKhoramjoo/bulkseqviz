@@ -48,7 +48,6 @@ create_bulkseqvis_object <- function(counts, metadata) {
   }
 
   # 3. Align and Sort Data
-  # This ensures column 1 of counts corresponds exactly to row 1 of metadata
   counts <- counts[, common_samples, drop = FALSE]
   metadata <- metadata[common_samples, , drop = FALSE]
 
@@ -74,5 +73,5 @@ print.bulkseq <- function(x, ...) {
   cat("Genes:", nrow(x$counts), "\n")
   cat("Samples:", ncol(x$counts), "\n")
   cat("Metadata variables:", paste(names(x$metadata), collapse=", "), "\n")
-  cat("Sample names:", paste(head(rownames(x$metadata)), collapse=", "), "...\n")
+  cat("Sample names:", paste(utils::head(rownames(x$metadata)), collapse=", "), "...\n")
 }

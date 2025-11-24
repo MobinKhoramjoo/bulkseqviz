@@ -13,10 +13,16 @@ BugReports: https://github.com/MobinKhoramjoo/bulkseqviz/issues
 Imports: 
     DESeq2,
     dplyr,
+    ggforce,
     ggplot2,
+    ggthemes,
+    matrixStats,
+    Morpho,
     paletteer,
     pheatmap,
+    plotly,
     RColorBrewer,
+    rgl,
     SummarizedExperiment,
     tibble,
     tidyr

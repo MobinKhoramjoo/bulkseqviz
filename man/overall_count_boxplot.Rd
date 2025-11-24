@@ -12,7 +12,7 @@ overall_count_boxplot(
 )
 }
 \arguments{
-\item{bs_obj}{A \code{bulkseq} object created by \code{create_bulkseq}.}
+\item{bs_obj}{A \code{bulkseq} object created by \code{create_bulkseqvis_object}.}
 
 \item{color_by}{Character string. The name of the column in metadata to use for coloring.}
 
@@ -27,9 +27,11 @@ A ggplot object.
 }
 \description{
 Generates a boxplot of log10(counts + 1) for all samples, colored by a metadata variable.
+Returns a ggplot object that can be further customized (e.g., adding theme layers).
 }
 \examples{
 \dontrun{
-  overall_count_boxplot(my_obj, color_by = "condition")
+  # You can add ggplot themes to the result:
+  overall_count_boxplot(my_obj, color_by = "condition") + ggplot2::theme_classic()
 }
 }

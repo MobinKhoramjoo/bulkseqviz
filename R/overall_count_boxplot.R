@@ -1,8 +1,9 @@
 #' Overall Count Boxplot
 #'
 #' Generates a boxplot of log10(counts + 1) for all samples, colored by a metadata variable.
+#' Returns a ggplot object that can be further customized (e.g., adding theme layers).
 #'
-#' @param bs_obj A \code{bulkseq} object created by \code{create_bulkseq}.
+#' @param bs_obj A \code{bulkseq} object created by \code{create_bulkseqvis_object}.
 #' @param color_by Character string. The name of the column in metadata to use for coloring.
 #' @param group_order Character vector. Optional. Specify the order of levels for the \code{color_by} variable.
 #'   Defaults to alphabetical order if NULL.
@@ -12,14 +13,15 @@
 #' @return A ggplot object.
 #' @export
 #' @import ggplot2
-#' @importFrom dplyr left_join distinct arrange pull
+#' @importFrom dplyr left_join distinct arrange pull %>%
 #' @importFrom tidyr pivot_longer
 #' @importFrom tibble rownames_to_column
 #' @importFrom paletteer paletteer_d
 #'
 #' @examples
 #' \dontrun{
-#'   overall_count_boxplot(my_obj, color_by = "condition")
+#'   # You can add ggplot themes to the result:
+#'   overall_count_boxplot(my_obj, color_by = "condition") + ggplot2::theme_classic()
 #' }
 overall_count_boxplot <- function(bs_obj,
                                   color_by,
@@ -40,16 +42,12 @@ overall_count_boxplot <- function(bs_obj,
   }
 
   # 3. Handle Defaults
-  # Default Order: Alphabetical
   if (is.null(group_order)) {
     group_order <- sort(unique(as.character(metadata[[color_by]])))
   }
 
-  # Default Colors: ggsci::nrc_npg
   if (is.null(group_colors)) {
     group_colors <- paletteer::paletteer_d("ggsci::nrc_npg")
-
-    # Handle case where we have more groups than colors in the palette
     if (length(group_order) > length(group_colors)) {
       warning("More groups than colors in default palette. Recycling colors.")
       group_colors <- rep(group_colors, length.out = length(group_order))
@@ -57,27 +55,28 @@ overall_count_boxplot <- function(bs_obj,
   }
 
   # 4. Prepare Data
-  # Set factor levels for plotting order
   metadata[[color_by]] <- factor(metadata[[color_by]], levels = group_order)
-
   log_counts <- log10(count_mat + 1)
 
-  # Reshape
+  # We use cols = -1 to exclude the 'gene_id' column without naming it explicitly
+  # to avoid R CMD check 'global variable' notes.
   long_df <- as.data.frame(log_counts) %>%
     tibble::rownames_to_column(var = "gene_id") %>%
-    tidyr::pivot_longer(-gene_id, names_to = "Sample", values_to = "log10_count") %>%
-    # Join using Sample as key. We convert rownames to a column named "Sample" to match pivot_longer
+    tidyr::pivot_longer(cols = -1, names_to = "Sample", values_to = "log10_count") %>%
     dplyr::left_join(metadata %>% tibble::rownames_to_column("Sample"), by = "Sample")
 
-  # Reorder Samples on X-axis based on group_order
+  # Fix factor levels for ordering on X-axis
   long_df$Sample <- factor(long_df$Sample,
                            levels = long_df %>%
-                             dplyr::distinct(Sample, .data[[color_by]]) %>%
+                             dplyr::distinct(.data[["Sample"]], .data[[color_by]]) %>%
                              dplyr::arrange(factor(.data[[color_by]], levels = group_order)) %>%
-                             dplyr::pull(Sample))
+                             dplyr::pull(.data[["Sample"]]))
 
   # 5. Plot
-  p <- ggplot2::ggplot(long_df, ggplot2::aes(x = Sample, y = log10_count, fill = .data[[color_by]])) +
+  # Use .data[["name"]] to avoid global variable notes in R CMD check
+  p <- ggplot2::ggplot(long_df, ggplot2::aes(x = .data[["Sample"]],
+                                             y = .data[["log10_count"]],
+                                             fill = .data[[color_by]])) +
     ggplot2::geom_boxplot(outlier.size = 0.5, outlier.alpha = 0.3) +
     ggplot2::scale_fill_manual(values = group_colors, drop = FALSE) +
     ggplot2::labs(x = "Samples", y = "log10(Counts + 1)", fill = color_by) +
