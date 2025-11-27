@@ -99,13 +99,14 @@ test_that("t-SNE plot runs without error", {
   expect_s3_class(p, "ggplot")
 })
 
-test_that("DE analysis, Volcano, Barplot, and Log2FC Comp run without error", {
+test_that("DE analysis, Volcano, Barplot, Log2FC Comp, and FC Dotplot run without error", {
   # Generate synthetic data
   n_genes <- 1000
   n_samples <- 9
   cnts <- matrix(as.integer(sample(10:1000, n_genes * n_samples, replace=TRUE)), ncol = n_samples)
   colnames(cnts) <- paste0("S", 1:n_samples)
-  rownames(cnts) <- paste0("Gene", 1:n_genes)
+  # Create mock gene names to test dotplot matching
+  rownames(cnts) <- paste0("Gene_", 1:n_genes)
 
   # 3 groups to allow 2 comparisons
   meta <- data.frame(condition = rep(c("Ctrl", "TrtA", "TrtB"), each = 3))
@@ -132,4 +133,11 @@ test_that("DE analysis, Volcano, Barplot, and Log2FC Comp run without error", {
   # Run Log2FC Comparison
   p_fc <- plot_fcvsfc(obj, name1 = "TrtA_vs_Ctrl", name2 = "TrtB_vs_Ctrl")
   expect_s3_class(p_fc, "gtable")
+
+  # Run FC Dotplot
+  # Pick random genes to plot
+  target_genes <- rownames(cnts)[1:5]
+  # Note: since we simulated data, padj might all be 1. We raise cutoff to see points.
+  p_dot <- plot_fc_dotplot(obj, genes = target_genes, padj_cutoff = 1.1)
+  expect_s3_class(p_dot, "ggplot")
 })
