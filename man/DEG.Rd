@@ -10,6 +10,7 @@ DEG(
   compare_levels,
   covariates = NULL,
   min_count = 10,
+  min_sample = 3,
   padj_cutoff = 1,
   log2fc_cutoff = 0,
   biomart_dataset = "hsapiens_gene_ensembl",
@@ -26,7 +27,9 @@ DEG(
 
 \item{covariates}{Character vector. Optional. Additional metadata columns to include in the design formula.}
 
-\item{min_count}{Integer. Minimum total counts per gene to keep. Default 10.}
+\item{min_count}{Integer. Minimum number of counts required for a gene to be considered expressed. Default 10.}
+
+\item{min_sample}{Integer. Minimum number of samples that must have at least \code{min_count} reads. Default 3.}
 
 \item{padj_cutoff}{Numeric. Filter output for padj < this value (for console summary). Default 1.}
 

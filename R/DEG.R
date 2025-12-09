@@ -7,7 +7,8 @@
 #' @param design_col Character string. The metadata column to use for the design formula (e.g., "condition").
 #' @param compare_levels Character vector of length 2. The levels to compare in the format c("Treatment", "Control").
 #' @param covariates Character vector. Optional. Additional metadata columns to include in the design formula.
-#' @param min_count Integer. Minimum total counts per gene to keep. Default 10.
+#' @param min_count Integer. Minimum number of counts required for a gene to be considered expressed. Default 10.
+#' @param min_sample Integer. Minimum number of samples that must have at least \code{min_count} reads. Default 3.
 #' @param padj_cutoff Numeric. Filter output for padj < this value (for console summary). Default 1.
 #' @param log2fc_cutoff Numeric. Filter output for |log2FC| > this value (for console summary). Default 0.
 #' @param biomart_dataset Character string. The BioMart dataset to use (e.g., "hsapiens_gene_ensembl"). If NULL, annotation is skipped.
@@ -44,6 +45,7 @@ DEG <- function(bs_obj,
                 compare_levels,
                 covariates = NULL,
                 min_count = 10,
+                min_sample = 3,
                 padj_cutoff = 1,
                 log2fc_cutoff = 0,
                 biomart_dataset = "hsapiens_gene_ensembl",
@@ -81,13 +83,11 @@ DEG <- function(bs_obj,
                                         design = design_formula)
 
   # 4. Low count filter (per group strategy)
-  # We keep genes that have >= min_count in ALL samples of AT LEAST ONE group
-  # (This matches your provided logic closely)
-  grp <- metadata_sub[[design_col]]
-  mat <- SummarizedExperiment::assay(dds)
-
-  # Simplified robust filtering: Keep if rowSum >= min_count across all selected samples.
-  dds <- dds[rowSums(SummarizedExperiment::assay(dds)) >= min_count, ]
+  # Keep genes that have >= min_count in at least min_sample samples
+  # This logic ensures that a gene is expressed in at least one group (assuming min_sample <= group size)
+  # but allows genes to be OFF in the other group (essential for DE analysis).
+  keep <- rowSums(SummarizedExperiment::assay(dds) >= min_count) >= min_sample
+  dds <- dds[keep, ]
 
   # 5. Run DESeq
   message("Running DESeq2...")
@@ -184,3 +184,4 @@ DEG <- function(bs_obj,
 
   return(bs_obj)
 }
+
