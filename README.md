@@ -11,7 +11,8 @@
 You can install the development version of bulkseqvis from GitHub with:
 
 ```         
-# install.packages("devtools") devtools::install_github("MobinKhoramjoo/bulkseqvis") 
+# install.packages("devtools") 
+devtools::install_github("MobinKhoramjoo/bulkseqvis") 
 ```
 
 ## 🚀 Key Features
