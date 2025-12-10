@@ -1,0 +1,161 @@
+# Downstream bulk RNA Seq Data Analysis & Visualization with nulkseqviz
+
+```         
+knitr::opts_chunk$set(   collapse = TRUE,   comment = "#>",   fig.width = 7,   fig.height = 5 ) 
+```
+
+## 1. Introduction
+
+This vignette provides a comprehensive guide to analyzing bulk RNA-sequencing data using the `bulkseqvis` package. We will cover data import, quality control, differential expression analysis, and visualization of results.
+
+## 2. Data Simulation and Setup
+
+First, we load the package and simulate a dataset representing a typical experiment with multiple conditions (Control, Treatment A, Treatment B) and biological replicates.
+
+```         
+library(bulkseqvis)  
+# Set seed for reproducibility 
+set.seed(42)  
+
+# Define experiment parameters 
+n_genes <- 1000 
+n_samples <- 12  
+
+# 1. Generate Synthetic Count Matrix 
+# Simulating raw integer counts for genes 
+counts <- matrix(
+  as.integer(sample(10:5000, n_genes * n_samples, replace = TRUE)),
+  ncol = n_samples
+)
+colnames(counts) <- paste0("Sample_", 1:n_samples) 
+rownames(counts) <- paste0("ENSG", sprintf("%04d", 1:n_genes))  
+
+# 2. Generate Metadata 
+# Conditions: 4 Controls, 4 Treatment A, 4 Treatment B 
+# Batches: Simulating a batch effect (Batch 1 vs Batch 2) 
+metadata <- data.frame(
+  condition = factor(rep(c("Control", "TreatA", "TreatB"), each = 4), 
+                     levels = c("Control", "TreatA", "TreatB")),
+  batch = rep(c("Batch_1", "Batch_2"), times = 6)
+)
+rownames(metadata) <- colnames(counts)  
+
+# Preview the metadata 
+print(head(metadata)) 
+```
+
+## 3. Creating the Analysis Object
+
+The `bulkseq` object acts as a container for your raw counts and metadata, ensuring data integrity throughout the analysis.
+
+```         
+bs_obj <- create_bulkseqvis_object(counts = counts, metadata = metadata)  
+
+# Print object summary 
+print(bs_obj) 
+```
+
+## 4. Quality Control & Exploratory Analysis
+
+Before running statistical tests, it is crucial to assess the quality of the data and check for batch effects.
+
+### A. Count Distribution
+
+We examine the distribution of raw counts to ensure samples are comparable.
+
+```         
+p <- overall_count_boxplot(bs_obj, color_by = "condition")
+print(p)
+```
+
+### B. Principal Component Analysis (PCA)
+
+PCA projects the high-dimensional gene expression data into 2D space. Samples should cluster by condition.
+
+```         
+# 2D PCA colored by condition, shaped by batch 
+p <- plot_pca_2d(bs_obj, color_by = "condition", shape_by = "batch")
+print(p)
+```
+
+### C. Sample-to-Sample Distance
+
+This heatmap visualizes the similarity between samples. Replicates within the same group should be highly correlated (dark blue).
+
+```         
+sample_distance_heatmap(bs_obj, color_by = "condition", fontsize = 9) 
+```
+
+## 5. Differential Expression Analysis
+
+We perform Differential Expression (DE) analysis using `DESeq2` wrapped inside the `DEG()` function.
+
+-   **Design:** We control for `condition`.
+
+-   **Contrasts:** We compare each treatment against the control.
+
+```         
+# Contrast 1: Treatment A vs Control 
+# Note: biomart_dataset is NULL for this tutorial to run offline.  
+# In real analysis, use "hsapiens_gene_ensembl" to map IDs to symbols of human genes. 
+
+bs_obj <- DEG(bs_obj,                
+design_col = "condition",                
+compare_levels = c("TreatA", "Control"),               
+biomart_dataset = NULL)  
+
+# Contrast 2: Treatment B vs Control 
+bs_obj <- DEG(bs_obj,                
+design_col = "condition",                
+compare_levels = c("TreatB", "Control"),               
+biomart_dataset = NULL) 
+```
+
+## 6. Visualization of Results
+
+### A. Volcano Plots
+
+Volcano plots display statistical significance (\$-\\log\_{10} \\text{FDR}\$) versus magnitude of change (\$\\log_2 \\text{Fold Change}\$).
+
+```         
+p <- plot_volcano(bs_obj, 
+             comparison_id = "TreatA_vs_Ctrl", 
+             top_labels = 5,
+             plot_title = "Volcano: Treatment A vs Control")
+print(p)
+```
+
+### B. Summary of Differential Expression
+
+A quick overview of how many genes were up- or down-regulated across all comparisons.
+
+```         
+p <- plot_deg_bar(bs_obj)
+print(p)
+```
+
+### C. Comparing Contrasts (Log2FC vs Log2FC)
+
+Here we compare the effect of Treatment A vs Treatment B. Genes falling on the diagonal behave similarly in both treatments.
+
+```         
+p <- plot_fcvsfc(bs_obj, name1 = "TreatA_vs_Ctrl", name2 = "TreatB_vs_Ctrl")
+plot(p)
+```
+
+### D. Single Gene Expression
+
+Finally, we can plot the normalized expression of specific genes of interest.
+
+```         
+# Select the first two genes from our dataset
+target_genes <- rownames(counts)[1:2]  
+
+p <- plot_gene_boxplot(bs_obj, 
+                  genes = target_genes, 
+                  x_var = "condition", 
+                  region_var = "batch",
+                  jitter_points = TRUE,
+                  biomart_dataset = NULL)
+print(p)
+```

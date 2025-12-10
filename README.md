@@ -1,14 +1,14 @@
 # bulkseqvis: Streamlined Visualization for Bulk RNA-Seq Data
 
-**bulkseqvis** is an R package designed to simplify the downstream analysis and visualization of bulk RNA-sequencing data. Built on an S3 object-oriented framework, it wraps complex workflows---including normalization, differential expression (DESeq2), and dimensionality reduction (PCA, UMAP, t-SNE)---into intuitive, one-line functions.
+**bulkseqvis** is an R package designed to simplify the downstream analysis and visualization of bulk RNA-sequencing data. Built on an S3 object-oriented framework, it wraps complex workflows, including normalization, differential expression (DESeq2), and dimensionality reduction (PCA, UMAP, t-SNE) into intuitive, one-line functions.
 
 ## 📦 Installation
 
 You can install the development version of bulkseqvis from GitHub with:
 
 ```         
-# install.packages("devtools") 
-devtools::install_github("MobinKhoramjoo/bulkseqvis") 
+# install.packages("devtools")
+devtools::install_github("MobinKhoramjoo/bulkseqvis")
 ```
 
 ## 🚀 Key Features
@@ -72,11 +72,11 @@ bs_obj <- create_bulkseqvis_object(counts = counts, metadata = metadata)
 print(bs_obj)
 ```
 
-### 3. Quality Control & Exploratory Analysis
+### 3. Quality Control (QC)
 
-Before running statistical tests, it is crucial to assess the quality of the data and check for batch effects.
+Before running statistical tests, it is crucial to assess the quality of the data.
 
-#### A. Count Distribution
+#### A. Overall Count Distribution
 
 We examine the distribution of raw counts to ensure samples are comparable.
 
@@ -85,7 +85,19 @@ p <- overall_count_boxplot(bs_obj, color_by = "condition")
 print(p)
 ```
 
-#### B. Principal Component Analysis (PCA)
+#### B. Sample-to-Sample Distance
+
+This heatmap visualizes the similarity between samples. Replicates within the same group should be highly correlated (dark blue).
+
+```         
+sample_distance_heatmap(bs_obj, color_by = "condition", fontsize = 9)
+```
+
+### 4. Dimensionality Reduction
+
+Visualizing sample clustering using various algorithms.
+
+#### A. PCA (2D)
 
 PCA projects the high-dimensional gene expression data into 2D space. Samples should cluster by condition.
 
@@ -95,16 +107,34 @@ p <- plot_pca_2d(bs_obj, color_by = "condition", shape_by = "batch")
 print(p)
 ```
 
-#### C. Sample-to-Sample Distance
+#### B. PCA (3D)
 
-This heatmap visualizes the similarity between samples. Replicates within the same group should be highly correlated (dark blue).
+Interactive 3D visualization of Principal Components.
 
 ```         
-# pheatmap draws directly to the grid, so we just call it
-sample_distance_heatmap(bs_obj, color_by = "condition", fontsize = 9)
+# Generates an interactive plotly object
+plot_pca_3d(bs_obj, color_by = "condition")
 ```
 
-### 4. Differential Expression Analysis
+#### C. UMAP
+
+Uniform Manifold Approximation and Projection for non-linear dimensionality reduction.
+
+```         
+p <- plot_umap_2d(bs_obj, color_by = "condition")
+print(p)
+```
+
+#### D. t-SNE
+
+t-Distributed Stochastic Neighbor Embedding.
+
+```         
+p <- plot_tsne_2d(bs_obj, color_by = "condition")
+print(p)
+```
+
+### 5. Differential Expression Analysis
 
 We perform Differential Expression (DE) analysis using `DESeq2` wrapped inside the `DEG()` function.
 
@@ -128,7 +158,7 @@ bs_obj <- DEG(bs_obj,
               biomart_dataset = NULL)
 ```
 
-### 5. Visualization of Results
+### 6. Visualization of Results
 
 #### A. Volcano Plots
 
@@ -142,7 +172,7 @@ p <- plot_volcano(bs_obj,
 print(p)
 ```
 
-#### B. Summary of Differential Expression
+#### B. Summary of Differential Expression (Barplot)
 
 A quick overview of how many genes were up- or down-regulated across all comparisons.
 
@@ -161,7 +191,19 @@ p <- plot_fcvsfc(bs_obj, name1 = "TreatA_vs_Ctrl", name2 = "TreatB_vs_Ctrl")
 plot(p)
 ```
 
-#### D. Single Gene Expression
+#### D. Log2FC Dotplot
+
+Visualizing specific genes across multiple contrasts.
+
+```         
+# Select genes to visualize
+target_genes <- rownames(counts)[1:5]
+
+p <- plot_fc_dotplot(bs_obj, genes = target_genes)
+print(p)
+```
+
+#### E. Single Gene Expression (Boxplot)
 
 Finally, we can plot the normalized expression of specific genes of interest.
 
