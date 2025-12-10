@@ -1,9 +1,9 @@
 Package: bulkseqviz
 Title: What the Package Does (One Line, Title Case)
-Version: 0.0.0.9000
+Version: 0.1
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
+    person("Mobin", "Khoramjoo", email = "mobin.khoramjoo@gmail.com", role = c("aut", "cre"))
+Description: Streamlined Visualization for Bulk RNA-Seq Data
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

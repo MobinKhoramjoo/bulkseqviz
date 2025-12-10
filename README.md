@@ -29,8 +29,11 @@ Here is a minimal example of how to go from raw counts to a PCA plot.
 
 ```         
 library(bulkseqvis)  
+
 # 1. Load your data (Example using dummy data) 
-counts <- matrix(sample(1:1000, 1000), ncol = 10) 
+counts <- matrix(sample(1:1000, 1000), 
+ncol = 10) 
+
 colnames(counts) <- paste0("Sample", 1:10) 
 rownames(counts) <- paste0("Gene", 1:100)  
 
@@ -42,7 +45,6 @@ metadata <- data.frame(
 rownames(metadata) <- colnames(counts)  
 
 # 2. Create the bulkseq object 
-
 bs_obj <- create_bulkseqvis_object(counts, metadata)  
 
 # 3. 2D PCA plot 

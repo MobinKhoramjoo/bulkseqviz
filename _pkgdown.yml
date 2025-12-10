@@ -1,0 +1,58 @@
+url: https://MobinKhoramjoo.github.io/bulkseqvis
+template:
+  bootstrap: 5
+
+# Explicitly set developer/author for the sidebar
+authors:
+  Mobin Khoramjoo:
+    href: https://github.com/MobinKhoramjoo
+    roles: [aut, cre]
+
+# Navigation Bar Setup
+navbar:
+  structure:
+    left:  [intro, reference, articles, news]
+    right: [search, github]
+  components:
+    reference:
+      text: Functions
+      href: reference/index.html
+    articles:
+      text: Vignette
+      href: articles/workflow.html
+
+# Organize functions into logical groups
+reference:
+  - title: "Data Import & Object Creation"
+    desc: "Functions to set up the analysis object."
+    contents:
+      - create_bulkseqvis_object
+      - print.bulkseq
+
+  - title: "Quality Control"
+    desc: "Visualizations for checking data quality and sample similarity."
+    contents:
+      - overall_count_boxplot
+      - sample_distance_heatmap
+
+  - title: "Dimensionality Reduction"
+    desc: "Exploratory analysis using PCA, UMAP, and t-SNE."
+    contents:
+      - plot_pca_2d
+      - plot_pca_3d
+      - plot_umap_2d
+      - plot_tsne_2d
+
+  - title: "Differential Expression"
+    desc: "Core analysis functions."
+    contents:
+      - DEG
+
+  - title: "Results Visualization"
+    desc: "Plots for interpreting differential expression results."
+    contents:
+      - plot_volcano
+      - plot_deg_bar
+      - plot_fcvsfc
+      - plot_fc_dotplot
+      - plot_gene_boxplot
