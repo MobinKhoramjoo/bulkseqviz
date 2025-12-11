@@ -74,10 +74,9 @@ plot_fc_dotplot <- function(bs_obj, genes, padj_cutoff = 0.05, id_col = NULL) {
   # 4. Plot
   p <- ggplot2::ggplot(plot_df, ggplot2::aes(x = .data$gene_label, y = .data$source)) +
     ggplot2::geom_point(
-      ggplot2::aes(size = .data$padj_trans, fill = .data$log2FoldChange),
-      shape = 21, color = "black", stroke = 1.5
+      ggplot2::aes(size = .data$padj_trans, color = .data$log2FoldChange)
     ) +
-    ggplot2::scale_fill_gradient2(
+    ggplot2::scale_color_gradient2(
       low = "#5c6bc0", mid = "white", high = "#C05C6B", midpoint = 0,
       name = "log2FC"
     ) +
