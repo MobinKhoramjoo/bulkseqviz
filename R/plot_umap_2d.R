@@ -1,6 +1,7 @@
 #' 2D UMAP Plot
 #'
 #' Generates a 2D UMAP plot using VST-transformed counts.
+#' Automatically adjusts n_neighbors for small datasets.
 #'
 #' @param bs_obj A \code{bulkseq} object created by \code{create_bulkseqvis_object}.
 #' @param color_by Character string. Metadata column for point color.
@@ -9,6 +10,7 @@
 #' @param min_gene_counts Integer. Keep genes with >= this many total reads. Default 100.
 #' @param ntop Integer. Number of most variable genes to use for UMAP. Default 1000.
 #' @param umap_seed Integer. Seed for reproducibility. Default 123.
+#' @param n_neighbors Integer. The size of local neighborhood (in terms of number of neighboring sample points) used for manifold approximation. Default 15.
 #' @param group_colors Character vector. Optional. Custom colors. Defaults to ggsci::nrc_npg.
 #'
 #' @return A ggplot object.
@@ -17,12 +19,13 @@
 #' @importFrom DESeq2 DESeqDataSetFromMatrix vst
 #' @importFrom SummarizedExperiment assay
 #' @importFrom matrixStats rowVars
-#' @importFrom umap umap
+#' @importFrom umap umap umap.defaults
 #' @importFrom paletteer paletteer_d
 #'
 #' @examples
 #' \dontrun{
 #'   plot_umap_2d(my_obj, color_by = "condition")
+#'   plot_umap_2d(my_obj, color_by = "condition", n_neighbors = 5)
 #' }
 plot_umap_2d <- function(bs_obj,
                          color_by,
@@ -31,6 +34,7 @@ plot_umap_2d <- function(bs_obj,
                          min_gene_counts = 100,
                          ntop = 1000,
                          umap_seed = 123,
+                         n_neighbors = 15,
                          group_colors = NULL) {
 
   # 1. Validation
@@ -64,15 +68,29 @@ plot_umap_2d <- function(bs_obj,
   top_genes <- order(gene_vars, decreasing = TRUE)[seq_len(min(ntop, nrow(norm_counts)))]
   expr_top  <- norm_counts[top_genes, , drop = FALSE]
 
-  # 6. Run UMAP
+  # 6. Run UMAP with Safety Check
   set.seed(umap_seed)
   umap_input <- t(expr_top)
-  umap_result <- umap::umap(umap_input, verbose = FALSE) # Verbose FALSE to keep console clean
+
+  # Get default config and apply user preference
+  config <- umap::umap.defaults
+  config$n_neighbors <- n_neighbors
+
+  n_samples <- nrow(umap_input)
+
+  # Safety Check: n_neighbors must be < n_samples
+  if (n_samples <= config$n_neighbors) {
+    # Set to n_samples - 1, but minimum 2
+    new_neighbors <- max(2, n_samples - 1)
+    message(paste0("Note: Sample size (", n_samples, ") is small. Adjusting UMAP n_neighbors from ", config$n_neighbors, " to ", new_neighbors))
+    config$n_neighbors <- new_neighbors
+  }
+
+  umap_result <- umap::umap(umap_input, config = config, verbose = FALSE)
   umap_df <- as.data.frame(umap_result$layout)
   colnames(umap_df) <- c("UMAP1", "UMAP2")
 
   # 7. Merge metadata for plotting
-  # Note: metadata rows match expression columns, so we can cbind directly
   umap_df <- cbind(umap_df, metadata)
 
   # 8. Handle Colors
