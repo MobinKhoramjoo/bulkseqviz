@@ -34,13 +34,13 @@ library(bulkseqviz)
 set.seed(42)
 
 # Define experiment parameters
-n_genes <- 1000
-n_samples <- 12
+n_genes <- 10000
+n_samples <- 18
 
 # 1. Generate Synthetic Count Matrix
-# Simulating raw integer counts for genes
+# Start with random base counts (background noise)
 counts <- matrix(
-  as.integer(sample(10:5000, n_genes * n_samples, replace = TRUE)),
+  as.integer(sample(10:2000, n_genes * n_samples, replace = TRUE)),
   ncol = n_samples
 )
 colnames(counts) <- paste0("Sample_", 1:n_samples)
@@ -48,11 +48,10 @@ rownames(counts) <- paste0("ENSG", sprintf("%04d", 1:n_genes))
 
 # 2. Generate Metadata
 # Conditions: 4 Controls, 4 Treatment A, 4 Treatment B
-# Batches: Simulating a batch effect (Batch 1 vs Batch 2)
 metadata <- data.frame(
-  condition = factor(rep(c("Control", "TreatA", "TreatB"), each = 4), 
+  condition = factor(rep(c("Control", "TreatA", "TreatB"), each = 6), 
                      levels = c("Control", "TreatA", "TreatB")),
-  batch = rep(c("Batch_1", "Batch_2"), times = 6)
+  batch = rep(c("Batch_1", "Batch_2"), times = 9)
 )
 rownames(metadata) <- colnames(counts)
 
@@ -101,7 +100,7 @@ PCA projects the high-dimensional gene expression data into 2D space. Samples sh
 
 ```         
 # 2D PCA colored by condition, shaped by batch
-plot_pca_2d(bs_obj, color_by = "condition", shape_by = "batch")
+plot_pca_2d(bs_obj, color_by = "condition")
 ```
 
 #### B. PCA (3D)
@@ -140,17 +139,18 @@ We perform Differential Expression (DE) analysis using `DESeq2` wrapped inside t
 ```         
 # Contrast 1: Treatment A vs Control
 # use one of BioMart databases to map IDs to symbols for visualization.
+#NULL is used for this tutorial
 bs_obj <- DEG(bs_obj, 
               design_col = "condition", 
               compare_levels = c("TreatA", "Control"),
-              biomart_dataset = "hsapiens_gene_ensembl"
+              biomart_dataset = NULL
               )
 
 # Contrast 2: Treatment B vs Control
 bs_obj <- DEG(bs_obj, 
               design_col = "condition", 
               compare_levels = c("TreatB", "Control"),
-              biomart_dataset = "hsapiens_gene_ensembl"
+              biomart_dataset = NULL
               )
 ```
 
@@ -162,7 +162,7 @@ Volcano plots display statistical significance (\$-\\log\_{10} \\text{FDR}\$) ve
 
 ```         
 plot_volcano(bs_obj, 
-             comparison_id = "TreatA_vs_Ctrl", 
+             comparison_id = "TreatA_vs_Control", 
              top_labels = 5,
              plot_title = "Volcano: Treatment A vs Control"
              )
@@ -181,9 +181,7 @@ plot_deg_bar(bs_obj)
 Here we compare the effect of Treatment A vs Treatment B. Genes falling on the diagonal behave similarly in both treatments.
 
 ```         
-# This returns a gtable, so we use grid::grid.draw or standard print behavior
-p <- plot_fcvsfc(bs_obj, name1 = "TreatA_vs_Ctrl", name2 = "TreatB_vs_Ctrl")
-print(p)
+plot_fcvsfc(bs_obj, name1 = "TreatA_vs_Control", name2 = "TreatB_vs_Control")
 ```
 
 #### D. Log2FC Dotplot
@@ -191,8 +189,12 @@ print(p)
 Visualizing specific genes across multiple contrasts.
 
 ```         
-# Select genes to visualize
-target_genes <- rownames(counts)[1:5]
+# Select genes to visualize: draw the gene symbol/id into a vector
+library(dplyr)
+target_genes <- bs_obj$DE_results$TreatA_vs_Control %>% 
+  dplyr::arrange(desc(log2FoldChange)) %>% 
+  dplyr::slice_head(n=5) %>% 
+  dplyr::pull(gene_id)
 
 plot_fc_dotplot(bs_obj, genes = target_genes)
 ```
@@ -202,16 +204,13 @@ plot_fc_dotplot(bs_obj, genes = target_genes)
 Finally, we can plot the normalized expression of specific genes of interest.
 
 ```         
-# Select the first gene from our dataset
-target_genes <- rownames(counts)[1]
-
 plot_gene_boxplot(bs_obj, 
-                  genes = target_gene, 
+                  genes = target_genes, 
                   x_var = "condition", 
                   region_var = "batch",
                   jitter_points = TRUE,
                   biomart_dataset = NULL
-                  )
+)
 ```
 
 ## 🤝 Contributing
