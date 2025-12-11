@@ -8,12 +8,12 @@
 #' @param fc_cutoff Numeric. Log2 Fold Change cutoff for quadrants (default 1.5).
 #' @param padj_cutoff Numeric. P-adj cutoff for significance (default 0.05).
 #'
-#' @return A gtable object (plot grid).
+#' @return A gtable object (plot grid) invisibly. The plot is drawn to the current device.
 #' @export
 #' @import ggplot2
 #' @importFrom dplyr select mutate filter arrange left_join case_when
 #' @importFrom tibble tibble deframe
-#' @importFrom grid unit textGrob pointsGrob gpar convertWidth grobHeight grobWidth
+#' @importFrom grid unit textGrob pointsGrob gpar convertWidth grobHeight grobWidth grid.newpage grid.draw
 #' @importFrom gtable gtable gtable_add_grob
 #' @importFrom stats cor.test complete.cases na.omit
 #' @importFrom rlang .data
@@ -190,5 +190,9 @@ plot_fcvsfc <- function(bs_obj, name1, name2, fc_cutoff = 1.5, padj_cutoff = 0.0
   final <- gtable::gtable_add_grob(final, plot_grob, 1, 1, 1, 1, name = "plot")
   final <- gtable::gtable_add_grob(final, right_col, 1, 2, 1, 2, name = "rightcol")
 
-  return(final)
+  # Draw the plot
+  grid::grid.newpage()
+  grid::grid.draw(final)
+
+  return(invisible(final))
 }
