@@ -18,7 +18,7 @@ plot_fcvsfc(bs_obj, name1, name2, fc_cutoff = 1.5, padj_cutoff = 0.05)
 \item{padj_cutoff}{Numeric. P-adj cutoff for significance (default 0.05).}
 }
 \value{
-A gtable object (plot grid).
+A gtable object (plot grid) invisibly. The plot is drawn to the current device.
 }
 \description{
 Generates a scatter plot comparing log2 fold changes from two different comparisons.

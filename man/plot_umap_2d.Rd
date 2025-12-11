@@ -12,6 +12,7 @@ plot_umap_2d(
   min_gene_counts = 100,
   ntop = 1000,
   umap_seed = 123,
+  n_neighbors = 15,
   group_colors = NULL
 )
 }
@@ -30,6 +31,8 @@ plot_umap_2d(
 
 \item{umap_seed}{Integer. Seed for reproducibility. Default 123.}
 
+\item{n_neighbors}{Integer. The size of local neighborhood (in terms of number of neighboring sample points) used for manifold approximation. Default 15.}
+
 \item{group_colors}{Character vector. Optional. Custom colors. Defaults to ggsci::nrc_npg.}
 }
 \value{
@@ -37,9 +40,11 @@ A ggplot object.
 }
 \description{
 Generates a 2D UMAP plot using VST-transformed counts.
+Automatically adjusts n_neighbors for small datasets.
 }
 \examples{
 \dontrun{
   plot_umap_2d(my_obj, color_by = "condition")
+  plot_umap_2d(my_obj, color_by = "condition", n_neighbors = 5)
 }
 }
