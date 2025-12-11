@@ -1,5 +1,5 @@
 Package: bulkseqviz
-Title: What the Package Does (One Line, Title Case)
+Title: Downstream Bulk RNA Seq Data Visualization
 Version: 0.1
 Authors@R: 
     person("Mobin", "Khoramjoo", email = "mobin.khoramjoo@gmail.com", role = c("aut", "cre"))
