@@ -21,7 +21,7 @@
 #' @export
 #' @import ggplot2
 #' @importFrom DESeq2 DESeqDataSetFromMatrix DESeq counts
-#' @importFrom dplyr mutate select filter group_by summarise ungroup left_join all_of any_of
+#' @importFrom dplyr mutate select filter group_by summarise ungroup left_join all_of
 #' @importFrom tidyr pivot_longer
 #' @importFrom ggpubr geom_pwc
 #' @importFrom rlang sym !!
@@ -48,62 +48,104 @@ plot_gene_boxplot <- function(bs_obj,
                               show_ns = TRUE,
                               biomart_dataset = "hsapiens_gene_ensembl") {
 
-  # 1. Validation
+  # 1. Input Validation
   if (!inherits(bs_obj, "bulkseq")) stop("Input must be a 'bulkseq' object.")
-
   count_data <- bs_obj$counts
   metadata <- bs_obj$metadata
 
-  if (!all(genes %in% rownames(count_data))) stop("Some 'genes' are not found in count matrix rownames.")
   if (!x_var %in% names(metadata)) stop(paste("Column", x_var, "not found in metadata."))
   if (!region_var %in% names(metadata)) stop(paste("Column", region_var, "not found in metadata."))
 
-  # Capture symbols
+  # Capture symbols for plotting
   x_sym <- rlang::sym(x_var)
   region_sym <- rlang::sym(region_var)
 
-  # 2. Normalization (DESeq2 size factors)
+  # 2. Normalization
   dds <- DESeq2::DESeqDataSetFromMatrix(countData = count_data, colData = metadata, design = ~1)
   dds <- DESeq2::DESeq(dds, quiet = TRUE)
   norm_counts <- DESeq2::counts(dds, normalized = TRUE)
 
-  # 3. Subset and Format
-  sub_counts <- norm_counts[genes, , drop = FALSE] %>% as.data.frame()
-  sub_counts$gene_id <- rownames(sub_counts)
-  sub_counts$plot_name <- sub_counts$gene_id # Default fallback
+  # 3. Gene Name Resolution
+  # We need to map input 'genes' (which could be ID or Symbol) to:
+  # a) The actual rowname in count_data (for extraction)
+  # b) The symbol (for plotting)
 
-  # 4. BioMart Annotation (Fetch Symbol)
+  gene_map <- data.frame(input = genes, matrix_id = NA, plot_name = NA, stringsAsFactors = FALSE)
+
+  # Check direct matches first
+  direct_match <- genes %in% rownames(norm_counts)
+  gene_map$matrix_id[direct_match] <- genes[direct_match]
+
+  # Try BioMart if needed
   if (!is.null(biomart_dataset)) {
-    # Heuristic: Check if first gene looks like Ensembl ID (starts with ENS)
-    first_id <- utils::head(sub_counts$gene_id, 1)
-    is_ensembl <- grepl("^ENS", first_id)
+    mart <- tryCatch({
+      biomaRt::useEnsembl("ensembl", dataset = biomart_dataset)
+    }, error = function(e) { warning("BioMart connection failed."); NULL })
 
-    if (is_ensembl) {
-      tryCatch({
-        mart <- biomaRt::useEnsembl("ensembl", dataset = biomart_dataset)
-        map <- biomaRt::getBM(attributes = c("ensembl_gene_id", "external_gene_name"),
-                              filters = "ensembl_gene_id",
-                              values = sub_counts$gene_id,
-                              mart = mart)
+    if (!is.null(mart)) {
+      # Determine matrix ID type (Ensembl or not?)
+      first_id <- rownames(norm_counts)[1]
+      matrix_is_ens <- grepl("^ENS", first_id)
 
-        # Merge mapping
-        if(nrow(map) > 0) {
-          colnames(map) <- c("gene_id", "symbol")
-          sub_counts <- dplyr::left_join(sub_counts, map, by = "gene_id")
-          # Use symbol if available, otherwise stick to ID
-          sub_counts$plot_name <- ifelse(!is.na(sub_counts$symbol) & sub_counts$symbol != "",
-                                         sub_counts$symbol, sub_counts$gene_id)
-        }
-      }, error = function(e) {
-        warning("BioMart fetch failed. Using IDs as names.")
-      })
+      # A. If input is Symbol but Matrix is ENS -> Map Symbol to ENS
+      missing_mask <- is.na(gene_map$matrix_id)
+      if (any(missing_mask) && matrix_is_ens) {
+        # These inputs are likely symbols
+        syms <- gene_map$input[missing_mask]
+        map_ids <- biomaRt::getBM(attributes = c("external_gene_name", "ensembl_gene_id"),
+                                  filters = "external_gene_name",
+                                  values = syms,
+                                  mart = mart)
+        # Match back
+        idx <- match(gene_map$input[missing_mask], map_ids$external_gene_name)
+        gene_map$matrix_id[missing_mask] <- map_ids$ensembl_gene_id[idx]
+        # For these, the input WAS the symbol, so plot_name = input
+        gene_map$plot_name[missing_mask] <- gene_map$input[missing_mask]
+      }
+
+      # B. If we have matrix_ids (ENS), fetch Symbols for plotting
+      ens_mask <- !is.na(gene_map$matrix_id) & grepl("^ENS", gene_map$matrix_id)
+      if (any(ens_mask)) {
+        ids <- gene_map$matrix_id[ens_mask]
+        map_sym <- biomaRt::getBM(attributes = c("ensembl_gene_id", "external_gene_name"),
+                                  filters = "ensembl_gene_id",
+                                  values = ids,
+                                  mart = mart)
+        idx <- match(gene_map$matrix_id[ens_mask], map_sym$ensembl_gene_id)
+        found_sym <- map_sym$external_gene_name[idx]
+
+        # Update plot_name: prefer symbol, fallback to existing plot_name or ID
+        has_sym <- !is.na(found_sym) & found_sym != ""
+
+        # For rows where we haven't set plot_name yet (i.e. direct match inputs), set it now
+        # Or overwrite if found_sym is better than just the input ID
+        gene_map$plot_name[ens_mask][has_sym] <- found_sym[has_sym]
+      }
     }
-    # If not Ensembl ID (e.g. user already has symbols as rownames), plot_name stays as gene_id.
   }
 
-  # Fix: Use any_of() to safely exclude columns that might not exist (e.g. symbol)
+  # Fallbacks
+  # If matrix_id found but plot_name NA -> use input or matrix_id
+  found_mask <- !is.na(gene_map$matrix_id)
+  gene_map$plot_name[found_mask & is.na(gene_map$plot_name)] <- gene_map$input[found_mask & is.na(gene_map$plot_name)]
+
+  # Final check
+  if (any(is.na(gene_map$matrix_id))) {
+    stop(paste("Could not find gene(s) in count matrix:", paste(gene_map$input[is.na(gene_map$matrix_id)], collapse=", ")))
+  }
+
+  # 4. Subset and Plot prep
+  # Use gene_map to extract
+  sub_counts <- norm_counts[gene_map$matrix_id, , drop = FALSE] %>% as.data.frame()
+  sub_counts$matrix_id <- rownames(sub_counts)
+
+  # Join plot names
+  # Safer:
+  sub_counts <- dplyr::left_join(sub_counts, unique(gene_map[,c("matrix_id", "plot_name")]), by="matrix_id")
+
+  # Pivot
   long_df <- tidyr::pivot_longer(sub_counts,
-                                 cols = -dplyr::any_of(c("gene_id", "plot_name", "symbol")),
+                                 cols = -c("matrix_id", "plot_name"),
                                  names_to = "sample",
                                  values_to = "value")
 
