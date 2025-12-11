@@ -81,8 +81,7 @@ Before running statistical tests, it is crucial to assess the quality of the dat
 We examine the distribution of raw counts to ensure samples are comparable.
 
 ```         
-p <- overall_count_boxplot(bs_obj, color_by = "condition")
-print(p)
+overall_count_boxplot(bs_obj, color_by = "condition")
 ```
 
 #### B. Sample-to-Sample Distance
@@ -103,8 +102,7 @@ PCA projects the high-dimensional gene expression data into 2D space. Samples sh
 
 ```         
 # 2D PCA colored by condition, shaped by batch
-p <- plot_pca_2d(bs_obj, color_by = "condition", shape_by = "batch")
-print(p)
+plot_pca_2d(bs_obj, color_by = "condition", shape_by = "batch")
 ```
 
 #### B. PCA (3D)
@@ -121,8 +119,7 @@ plot_pca_3d(bs_obj, color_by = "condition")
 Uniform Manifold Approximation and Projection for non-linear dimensionality reduction.
 
 ```         
-p <- plot_umap_2d(bs_obj, color_by = "condition")
-print(p)
+plot_umap_2d(bs_obj, color_by = "condition")
 ```
 
 #### D. t-SNE
@@ -130,8 +127,7 @@ print(p)
 t-Distributed Stochastic Neighbor Embedding.
 
 ```         
-p <- plot_tsne_2d(bs_obj, color_by = "condition")
-print(p)
+plot_tsne_2d(bs_obj, color_by = "condition")
 ```
 
 ### 5. Differential Expression Analysis
@@ -144,18 +140,19 @@ We perform Differential Expression (DE) analysis using `DESeq2` wrapped inside t
 
 ```         
 # Contrast 1: Treatment A vs Control
-# Note: biomart_dataset is NULL for this tutorial to run offline. 
-# In real analysis, use "hsapiens_gene_ensembl" to map IDs to symbols.
+# use one of BioMart databases to map IDs to symbols for visualization.
 bs_obj <- DEG(bs_obj, 
               design_col = "condition", 
               compare_levels = c("TreatA", "Control"),
-              biomart_dataset = NULL)
+              biomart_dataset = "hsapiens_gene_ensembl"
+              )
 
 # Contrast 2: Treatment B vs Control
 bs_obj <- DEG(bs_obj, 
               design_col = "condition", 
               compare_levels = c("TreatB", "Control"),
-              biomart_dataset = NULL)
+              biomart_dataset = "hsapiens_gene_ensembl"
+              )
 ```
 
 ### 6. Visualization of Results
@@ -165,11 +162,11 @@ bs_obj <- DEG(bs_obj,
 Volcano plots display statistical significance (\$-\\log\_{10} \\text{FDR}\$) versus magnitude of change (\$\\log_2 \\text{Fold Change}\$).
 
 ```         
-p <- plot_volcano(bs_obj, 
+plot_volcano(bs_obj, 
              comparison_id = "TreatA_vs_Ctrl", 
              top_labels = 5,
-             plot_title = "Volcano: Treatment A vs Control")
-print(p)
+             plot_title = "Volcano: Treatment A vs Control"
+             )
 ```
 
 #### B. Summary of Differential Expression (Barplot)
@@ -177,8 +174,7 @@ print(p)
 A quick overview of how many genes were up- or down-regulated across all comparisons.
 
 ```         
-p <- plot_deg_bar(bs_obj)
-print(p)
+plot_deg_bar(bs_obj)
 ```
 
 #### C. Comparing Contrasts (Log2FC vs Log2FC)
@@ -188,7 +184,7 @@ Here we compare the effect of Treatment A vs Treatment B. Genes falling on the d
 ```         
 # This returns a gtable, so we use grid::grid.draw or standard print behavior
 p <- plot_fcvsfc(bs_obj, name1 = "TreatA_vs_Ctrl", name2 = "TreatB_vs_Ctrl")
-plot(p)
+print(p)
 ```
 
 #### D. Log2FC Dotplot
@@ -199,8 +195,7 @@ Visualizing specific genes across multiple contrasts.
 # Select genes to visualize
 target_genes <- rownames(counts)[1:5]
 
-p <- plot_fc_dotplot(bs_obj, genes = target_genes)
-print(p)
+plot_fc_dotplot(bs_obj, genes = target_genes)
 ```
 
 #### E. Single Gene Expression (Boxplot)
@@ -208,16 +203,16 @@ print(p)
 Finally, we can plot the normalized expression of specific genes of interest.
 
 ```         
-# Select the first two genes from our dataset
-target_genes <- rownames(counts)[1:2]
+# Select the first gene from our dataset
+target_genes <- rownames(counts)[1]
 
-p <- plot_gene_boxplot(bs_obj, 
-                  genes = target_genes, 
+plot_gene_boxplot(bs_obj, 
+                  genes = target_gene, 
                   x_var = "condition", 
                   region_var = "batch",
                   jitter_points = TRUE,
-                  biomart_dataset = NULL)
-print(p)
+                  biomart_dataset = NULL
+                  )
 ```
 
 ## 🤝 Contributing
