@@ -1,4 +1,4 @@
-# bulkseqvis: Streamlined Visualization for Bulk RNA-Seq Data
+# bulkseqviz: Streamlined Visualization for Bulk RNA-Seq Data
 
 **bulkseqvis** is an R package designed to simplify the downstream analysis and visualization of bulk RNA-sequencing data. Built on an S3 object-oriented framework, it wraps complex workflows, including normalization, differential expression (DESeq2), and dimensionality reduction (PCA, UMAP, t-SNE) into intuitive, one-line functions.
 
@@ -8,7 +8,7 @@ You can install the development version of bulkseqvis from GitHub with:
 
 ```         
 # install.packages("devtools")
-devtools::install_github("MobinKhoramjoo/bulkseqvis")
+devtools::install_github("MobinKhoramjoo/bulkseqviz")
 ```
 
 ## 🚀 Key Features
@@ -28,8 +28,7 @@ This section demonstrates a comprehensive analysis pipeline using simulated data
 First, we load the package and simulate a dataset representing a typical experiment with multiple conditions (Control, Treatment A, Treatment B) and biological replicates.
 
 ```         
-library(bulkseqvis)
-library(ggplot2) # Load ggplot2 for printing plots
+library(bulkseqviz)
 
 # Set seed for reproducibility
 set.seed(42)
