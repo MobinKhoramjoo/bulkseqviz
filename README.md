@@ -23,6 +23,8 @@ devtools::install_github("MobinKhoramjoo/bulkseqviz")
 
 This section demonstrates a comprehensive analysis pipeline using simulated data.
 
+![](man/figures/bulkseqviz.png)
+
 ### 1. Data Simulation and Setup
 
 First, we load the package and simulate a dataset representing a typical experiment with multiple conditions (Control, Treatment A, Treatment B) and biological replicates.
