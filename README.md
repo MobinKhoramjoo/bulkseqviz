@@ -1,6 +1,6 @@
 # bulkseqviz: Streamlined Visualization for Bulk RNA-Seq Data
 
-[![GitHub release](https://img.shields.io/github/v/release/MobinKhoramjoo/bulkseqviz)](https://github.com/MobinKhoramjoo/bulkseqviz/releases)
+# [![GitHub release](https://img.shields.io/github/v/release/MobinKhoramjoo/bulkseqviz?color=brightgreen)](https://github.com/MobinKhoramjoo/bulkseqviz/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 
