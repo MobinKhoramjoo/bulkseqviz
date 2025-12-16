@@ -1,10 +1,12 @@
 # bulkseqviz: Streamlined Visualization for Bulk RNA-Seq Data
 
-**bulkseqvis** is an R package designed to simplify the downstream analysis and visualization of bulk RNA-sequencing data. Built on an S3 object-oriented framework, it wraps complex workflows, including normalization, differential expression (DESeq2), and dimensionality reduction (PCA, UMAP, t-SNE) into intuitive, one-line functions.
+[![R-CMD-check](https://github.com/MobinKhoramjoo/bulkseqviz/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/MobinKhoramjoo/bulkseqviz/actions/workflows/R-CMD-check.yaml) [![GitHub release](https://img.shields.io/github/v/release/MobinKhoramjoo/bulkseqvis)](https://github.com/MobinKhoramjoo/bulkseqvis/releases)
+
+**bulkseqviz** is an R package designed to simplify the downstream analysis and visualization of bulk RNA-sequencing data. Built on an S3 object-oriented framework, it wraps complex workflows, including normalization, differential expression (DESeq2), and dimensionality reduction (PCA, UMAP, t-SNE) into intuitive, one-line functions.
 
 ## 📦 Installation
 
-You can install the development version of bulkseqvis from GitHub with:
+You can install the development version of bulkseqviz from GitHub with:
 
 ```         
 # install.packages("devtools")
