@@ -5,7 +5,8 @@
 #' @param bs_obj A \code{bulkseq} object created by \code{create_bulkseqvis_object}.
 #' @param color_by Character string. Metadata column for point color.
 #' @param ntop Integer. Number of most variable genes to calculate PCA on. Default 500.
-#' @param group_colors Character vector. Optional. Custom colors. Defaults to ggsci::nrc_npg.
+#' @param colors Character vector. Optional. Custom colors (named or unnamed). Defaults to ggsci::nrc_npg.
+#' @param size Numeric. Size of the scatter points. Default is 5.
 #'
 #' @return A plotly object.
 #' @export
@@ -17,15 +18,11 @@
 #' @importFrom Morpho quad2trimesh
 #' @importFrom stats prcomp cov
 #' @importFrom paletteer paletteer_d
-#'
-#' @examples
-#' \dontrun{
-#'   plot_pca_3d(my_obj, color_by = "condition")
-#' }
 plot_pca_3d <- function(bs_obj,
                         color_by,
                         ntop = 500,
-                        group_colors = NULL) {
+                        colors = NULL,
+                        size = 5) {
 
   # 1. Validation
   if (!inherits(bs_obj, "bulkseq")) stop("Input must be a 'bulkseq' object.")
@@ -53,68 +50,75 @@ plot_pca_3d <- function(bs_obj,
   # 4. Prepare Data Frame
   pc_df <- data.frame(metadata[[color_by]], pca$x[, 1:3])
   colnames(pc_df)[1] <- "Group"
-  pc_df$Group <- factor(pc_df$Group) # Ensure factor for levels
+  pc_df$Group <- factor(pc_df$Group)
 
-  # 5. Handle Colors
-  n_groups <- length(levels(pc_df$Group))
-  if (is.null(group_colors)) {
-    group_colors <- paletteer::paletteer_d("ggsci::nrc_npg")
-    if (n_groups > length(group_colors)) {
-      group_colors <- rep(group_colors, length.out = n_groups)
+  # 5. Handle Colors (Robust)
+  levels_list <- levels(pc_df$Group)
+  n_groups <- length(levels_list)
+
+  # Default colors if none provided
+  if (is.null(colors)) {
+    cols_gen <- paletteer::paletteer_d("ggsci::nrc_npg")
+    if (n_groups > length(cols_gen)) {
+      cols_gen <- rep(cols_gen, length.out = n_groups)
+    }
+    final_colors <- as.vector(cols_gen)[1:n_groups]
+    names(final_colors) <- levels_list
+  } else {
+    # If user provided named vector, match it. If unnamed, assign order.
+    if (!is.null(names(colors))) {
+      final_colors <- colors[levels_list]
+    } else {
+      final_colors <- colors[1:n_groups]
+      names(final_colors) <- levels_list
     }
   }
-  # Ensure group_colors is a plain vector to access by index
-  group_colors <- as.vector(group_colors)
 
-  # 6. Calculate 3D Ellipsoids
-  ellipsoids <- list()
-  levels_list <- levels(pc_df$Group)
+  # 6. Build Plotly Object (Points)
+  fig <- plotly::plot_ly(data = pc_df,
+                         x = ~PC1, y = ~PC2, z = ~PC3,
+                         color = ~Group,
+                         colors = final_colors,
+                         type = "scatter3d",
+                         mode = "markers",
+                         marker = list(size = size, opacity = 1.0)) # Use user-defined size
 
+  # 7. Add 3D Ellipsoids (Mesh)
+  # We iterate specifically through the levels found in the data
   for (g in levels_list) {
     group_data <- pc_df[pc_df$Group == g, 2:4]
-    # Ellipse requires at least 4 points for 3D covariance stability
+
+    # Ellipse requires at least 4 points
     if (nrow(group_data) > 3) {
-      # Use colMeans directly (from base), not stats::colMeans
+      # Calculate covariance
       e <- rgl::ellipse3d(stats::cov(group_data), centre = colMeans(group_data))
-      ellipsoids[[g]] <- Morpho::quad2trimesh(e)
-    }
-  }
+      el <- Morpho::quad2trimesh(e)
 
-  # 7. Build Plotly Object
-  fig <- plotly::plot_ly()
+      # Get the color specifically for this group
+      this_color <- final_colors[[g]]
 
-  # Add Scatter Points
-  fig <- fig %>%
-    plotly::add_trace(data = pc_df,
-                      x = ~PC1, y = ~PC2, z = ~PC3,
-                      type = "scatter3d", mode = "markers",
-                      color = ~Group,
-                      colors = group_colors[1:n_groups],
-                      marker = list(size = 4, opacity = 0.9))
-
-  # Add Ellipsoids (Mesh)
-  # We iterate through levels to ensure colors match index
-  for (i in seq_along(levels_list)) {
-    g_name <- levels_list[i]
-    if (g_name %in% names(ellipsoids)) {
-      el <- ellipsoids[[g_name]]
+      # Add the mesh trace
       fig <- fig %>%
         plotly::add_trace(x = el$vb[1,], y = el$vb[2,], z = el$vb[3,],
                           i = el$it[1,]-1, j = el$it[2,]-1, k = el$it[3,]-1,
-                          type = "mesh3d", opacity = 0.2,
-                          facecolor = rep(group_colors[i], ncol(el$it)),
-                          showlegend = FALSE)
+                          type = "mesh3d",
+                          opacity = 0.15,
+                          facecolor = rep(this_color, ncol(el$it)), # Apply specific color
+                          name = paste0(g, " (ellipse)"),
+                          showlegend = FALSE,
+                          inherit = FALSE) # Prevent inheriting scatter props
     }
   }
 
-  # Layout
+  # 8. Layout
   fig <- fig %>%
     plotly::layout(scene = list(
       xaxis = list(title = paste0("PC1 (", percentVar[1], "%)")),
       yaxis = list(title = paste0("PC2 (", percentVar[2], "%)")),
       zaxis = list(title = paste0("PC3 (", percentVar[3], "%)")),
       bgcolor = "white"
-    ))
+    ),
+    title = paste("3D PCA - Colored by", color_by))
 
   return(fig)
 }

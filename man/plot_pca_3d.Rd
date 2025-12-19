@@ -4,7 +4,7 @@
 \alias{plot_pca_3d}
 \title{3D PCA Plot (Interactive)}
 \usage{
-plot_pca_3d(bs_obj, color_by, ntop = 500, group_colors = NULL)
+plot_pca_3d(bs_obj, color_by, ntop = 500, colors = NULL, size = 5)
 }
 \arguments{
 \item{bs_obj}{A \code{bulkseq} object created by \code{create_bulkseqvis_object}.}
@@ -13,16 +13,13 @@ plot_pca_3d(bs_obj, color_by, ntop = 500, group_colors = NULL)
 
 \item{ntop}{Integer. Number of most variable genes to calculate PCA on. Default 500.}
 
-\item{group_colors}{Character vector. Optional. Custom colors. Defaults to ggsci::nrc_npg.}
+\item{colors}{Character vector. Optional. Custom colors (named or unnamed). Defaults to ggsci::nrc_npg.}
+
+\item{size}{Numeric. Size of the scatter points. Default is 5.}
 }
 \value{
 A plotly object.
 }
 \description{
 Generates an interactive 3D PCA plot using plotly. Includes 3D ellipses for groups.
-}
-\examples{
-\dontrun{
-  plot_pca_3d(my_obj, color_by = "condition")
-}
 }
