@@ -61,8 +61,8 @@ plot_volcano <- function(bs_obj,
       padj = ifelse(is.na(.data$padj), 1, .data$padj),
       log10p = -log10(.data$padj),
       category = dplyr::case_when(
-        .data$log2FoldChange >= log2(2^fc_thresh) & .data$padj < padj_thresh ~ "Up",
-        .data$log2FoldChange <= -log2(2^fc_thresh) & .data$padj < padj_thresh ~ "Down",
+        .data$log2FoldChange >= log2(fc_thresh) & .data$padj < padj_thresh ~ "Up",
+        .data$log2FoldChange <= -log2(fc_thresh) & .data$padj < padj_thresh ~ "Down",
         TRUE ~ "NS"
       ),
       label = ifelse(.data$category != "NS", .data$gene_name, NA_character_)
