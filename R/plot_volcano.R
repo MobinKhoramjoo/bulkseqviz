@@ -106,7 +106,6 @@ plot_volcano <- function(bs_obj,
     ) +
 
     ggplot2::geom_hline(yintercept = -log10(padj_thresh), linetype = "dashed", linewidth = 0.5) +
-    +
     ggplot2::geom_vline(xintercept = c(-log2(fc_thresh), log2(fc_thresh)), linetype = "dashed", size = 0.5) +
     ggplot2::annotate(
       "label", x = -Inf, y = Inf, label = paste0("Down: ", down_fdr),
