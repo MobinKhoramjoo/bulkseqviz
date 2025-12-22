@@ -8,7 +8,7 @@ plot_gene_boxplot(
   bs_obj,
   genes,
   x_var,
-  region_var,
+  region_var = NULL,
   x_order = NULL,
   region_order = NULL,
   x_colors = NULL,
@@ -26,7 +26,7 @@ plot_gene_boxplot(
 
 \item{x_var}{Character string. Metadata column for x-axis.}
 
-\item{region_var}{Character string. Metadata column for faceting.}
+\item{region_var}{Character string. Optional. Metadata column for faceting. Default NULL.}
 
 \item{x_order}{Character vector. Optional. Order of levels for x-axis.}
 
@@ -51,10 +51,4 @@ A ggplot object.
 \description{
 Generates boxplots for specific genes across conditions with statistical comparisons.
 Automatically fetches gene symbols via BioMart if needed.
-}
-\examples{
-\dontrun{
-  plot_gene_boxplot(bs_obj, genes = c("ENSG00000139618"),
-                    x_var = "condition", region_var = "batch")
-}
 }
