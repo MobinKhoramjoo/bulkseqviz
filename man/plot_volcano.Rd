@@ -21,8 +21,7 @@ plot_volcano(
 \item{comparison_id}{Character string. The name of the comparison to plot.}
 
 \item{fc_thresh}{Numeric. The Fold Change threshold (raw scale).
-Example: Enter 2 to filter for >2-fold change. Enter 1 to show ALL significant genes (no FC filter).
-Default 2.}
+Example: Enter 2 to filter for >2-fold change. Default 2.}
 
 \item{padj_thresh}{Numeric. Adjusted p-value (FDR) threshold. Default 0.05.}
 

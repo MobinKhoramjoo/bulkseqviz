@@ -5,8 +5,7 @@
 #' @param bs_obj A \code{bulkseq} object containing DE results from \code{DEG()}.
 #' @param comparison_id Character string. The name of the comparison to plot.
 #' @param fc_thresh Numeric. The Fold Change threshold (raw scale).
-#'    Example: Enter 2 to filter for >2-fold change. Enter 1 to show ALL significant genes (no FC filter).
-#'    Default 2.
+#'    Example: Enter 2 to filter for >2-fold change. Default 2.
 #' @param padj_thresh Numeric. Adjusted p-value (FDR) threshold. Default 0.05.
 #' @param repel_force Numeric. Force of repulsion for labels. Default 1.5.
 #' @param repel_max_overlaps Integer. Max label overlaps allowed. Default 15.
@@ -38,6 +37,7 @@ plot_volcano <- function(bs_obj,
   # 2. Extract Data
   df <- bs_obj$DE_results[[comparison_id]]
 
+  # Ensure gene_name exists for labeling, fallback to gene_id if missing
   if (!"gene_name" %in% colnames(df)) {
     df$gene_name <- df$gene_id
   } else {
@@ -47,10 +47,8 @@ plot_volcano <- function(bs_obj,
   # 3. Prepare Plot Data
   if (is.null(plot_title)) plot_title <- comparison_id
 
-  # CONVERSION: Handle FC -> Log2 conversion safely
-  # abs() on the outside ensures that if user inputs 0.5 (half change), we treat it as 1 (limit).
-  # If user inputs 1, log2(1) is 0.
-  log2_limit <- abs(log2(abs(fc_thresh)))
+  # We still calculate this variable just for the vertical lines plot
+  log2_limit <- log2(fc_thresh)
 
   df <- df %>%
     dplyr::select(.data$gene_id, .data$log2FoldChange, .data$padj, .data$gene_name) %>%
@@ -58,18 +56,9 @@ plot_volcano <- function(bs_obj,
       padj = ifelse(is.na(.data$padj), 1, .data$padj),
       log10p = -log10(.data$padj),
       category = dplyr::case_when(
-        # Priority 1: If not significant by P-value, it's NS
-        .data$padj >= padj_thresh ~ "NS",
-
-        # Priority 2: If FC is smaller than limit, it's NS
-        # (If limit is 0, this line is skipped, effectively filtering nothing)
-        abs(.data$log2FoldChange) < log2_limit ~ "NS",
-
-        # Priority 3: Assign Up/Down based on sign
-        .data$log2FoldChange > 0 ~ "Up",
-        .data$log2FoldChange < 0 ~ "Down",
-
-        # Catch-all: If log2FC is exactly 0, it's NS
+        # EXACT LOGIC REQUESTED:
+        .data$log2FoldChange >= log2(fc_thresh) & .data$padj < padj_thresh ~ "Up",
+        .data$log2FoldChange <= -log2(fc_thresh) & .data$padj < padj_thresh ~ "Down",
         TRUE ~ "NS"
       ),
       label = ifelse(.data$category != "NS", .data$gene_name, NA_character_)
@@ -116,7 +105,6 @@ plot_volcano <- function(bs_obj,
       name = expression(-log[10]*"(FDR)")
     ) +
 
-    # Standard P-value threshold line
     ggplot2::geom_hline(yintercept = -log10(padj_thresh), linetype = "dashed", linewidth = 0.5) +
 
     ggplot2::annotate(
@@ -153,8 +141,7 @@ plot_volcano <- function(bs_obj,
                              xlim = c(-xmax*1.1, xmax*1.1),
                              ylim = c(0, ymax*1.15))
 
-  # CONDITIONAL: Only add vertical lines if log2_limit is meaningful (> 0)
-  # If log2_limit is 0 (fc_thresh=1), we skip this to avoid ugly lines on the axis.
+  # Add lines if not 0
   if (log2_limit > 0) {
     p <- p + ggplot2::geom_vline(xintercept = c(-log2_limit, log2_limit),
                                  linetype = "dashed", linewidth = 0.5)
