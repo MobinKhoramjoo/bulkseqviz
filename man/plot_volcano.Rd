@@ -7,7 +7,7 @@
 plot_volcano(
   bs_obj,
   comparison_id,
-  fc_thresh = 1,
+  fc_thresh = 2,
   padj_thresh = 0.05,
   repel_force = 1.5,
   repel_max_overlaps = 15,
@@ -18,10 +18,11 @@ plot_volcano(
 \arguments{
 \item{bs_obj}{A \code{bulkseq} object containing DE results from \code{DEG()}.}
 
-\item{comparison_id}{Character string. The name of the comparison to plot (e.g., "Treated_vs_Control").
-Must match a name in \code{bs_obj$DE_results}.}
+\item{comparison_id}{Character string. The name of the comparison to plot.}
 
-\item{fc_thresh}{Numeric. Log2 Fold Change threshold for significance coloring. Default 1.}
+\item{fc_thresh}{Numeric. The Fold Change threshold (raw scale).
+Example: Enter 2 to filter for >2-fold change. Enter 1 to show ALL significant genes (no FC filter).
+Default 2.}
 
 \item{padj_thresh}{Numeric. Adjusted p-value (FDR) threshold. Default 0.05.}
 
@@ -37,12 +38,5 @@ Must match a name in \code{bs_obj$DE_results}.}
 A ggplot object.
 }
 \description{
-Creates a publication-ready volcano plot from differential expression results stored
-in the bulkseq object.
-}
-\examples{
-\dontrun{
-  plot_volcano(bs_obj, comparison_id = "Treated_vs_Control")
-  plot_volcano(bs_obj, comparison_id = "Treated_vs_Control", top_labels = 10)
-}
+Creates a publication-ready volcano plot from differential expression results.
 }
