@@ -106,7 +106,8 @@ plot_volcano <- function(bs_obj,
     ) +
 
     ggplot2::geom_hline(yintercept = -log10(padj_thresh), linetype = "dashed", linewidth = 0.5) +
-
+    +
+    ggplot2::geom_vline(xintercept = c(-log2(fc_thresh), log2(fc_thresh)), linetype = "dashed", size = 0.5) +
     ggplot2::annotate(
       "label", x = -Inf, y = Inf, label = paste0("Down: ", down_fdr),
       hjust = -0.1, vjust = 1.1, size = 4.2, fontface = "bold",
@@ -140,12 +141,6 @@ plot_volcano <- function(bs_obj,
     ggplot2::coord_cartesian(clip = "off",
                              xlim = c(-xmax*1.1, xmax*1.1),
                              ylim = c(0, ymax*1.15))
-
-  # Add lines if not 0
-  if (log2_limit > 0) {
-    p <- p + ggplot2::geom_vline(xintercept = c(-log2_limit, log2_limit),
-                                 linetype = "dashed", linewidth = 0.5)
-  }
 
   return(p)
 }
