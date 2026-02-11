@@ -4,7 +4,15 @@
 \alias{sample_distance_heatmap}
 \title{Sample-to-Sample Distance Heatmap}
 \usage{
-sample_distance_heatmap(bs_obj, color_by, min_gene_counts = 10, ...)
+sample_distance_heatmap(
+  bs_obj,
+  color_by,
+  min_gene_counts = 10,
+  colors = NULL,
+  title = "Sample-to-sample distance (Sorted by Group)",
+  ann_colors = NULL,
+  ...
+)
 }
 \arguments{
 \item{bs_obj}{A \code{bulkseq} object created by \code{create_bulkseqvis_object}.}
@@ -13,8 +21,14 @@ sample_distance_heatmap(bs_obj, color_by, min_gene_counts = 10, ...)
 
 \item{min_gene_counts}{Integer. Genes with total counts below this threshold are excluded. Default 10.}
 
-\item{...}{Additional arguments passed to \code{pheatmap::pheatmap}.
-Useful for changing fonts (e.g. \code{fontsize}), titles (\code{main}), or sizes (\code{cellwidth}).}
+\item{colors}{Vector of colors for the heatmap gradient. Defaults to "Blues".}
+
+\item{title}{Character string. The main title of the plot. Defaults to "Sample-to-sample distance (Sorted by Group)".}
+
+\item{ann_colors}{List. Optional custom annotation colors (e.g., \code{list(condition = c(A="red", B="blue"))}).
+If NULL (default), colors are generated automatically.}
+
+\item{...}{Additional arguments passed to \code{pheatmap::pheatmap} (e.g. \code{fontsize}, \code{cellwidth}).}
 }
 \value{
 A pheatmap object (invisibly).
@@ -26,12 +40,12 @@ groups appear adjacent.
 }
 \examples{
 \dontrun{
-  # Standard run
-  sample_distance_heatmap(my_obj, color_by = "condition")
+   # Standard run
+   sample_distance_heatmap(my_obj, color_by = "condition")
 
-  # Customize using standard pheatmap arguments (via ...)
-  sample_distance_heatmap(my_obj, color_by = "condition",
-                          fontsize = 14,
-                          main = "Custom Title")
+   # Custom Title and Heatmap Colors
+   sample_distance_heatmap(my_obj, color_by = "condition",
+                           title = "My Project Heatmap",
+                           colors = colorRampPalette(c("white", "red"))(100))
 }
 }

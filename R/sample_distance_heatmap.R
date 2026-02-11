@@ -7,8 +7,11 @@
 #' @param bs_obj A \code{bulkseq} object created by \code{create_bulkseqvis_object}.
 #' @param color_by Character string. The name of the column in metadata to use for coloring.
 #' @param min_gene_counts Integer. Genes with total counts below this threshold are excluded. Default 10.
-#' @param ... Additional arguments passed to \code{pheatmap::pheatmap}.
-#'   Useful for changing fonts (e.g. \code{fontsize}), titles (\code{main}), or sizes (\code{cellwidth}).
+#' @param colors Vector of colors for the heatmap gradient. Defaults to "Blues".
+#' @param title Character string. The main title of the plot. Defaults to "Sample-to-sample distance (Sorted by Group)".
+#' @param ann_colors List. Optional custom annotation colors (e.g., \code{list(condition = c(A="red", B="blue"))}).
+#'    If NULL (default), colors are generated automatically.
+#' @param ... Additional arguments passed to \code{pheatmap::pheatmap} (e.g. \code{fontsize}, \code{cellwidth}).
 #'
 #' @return A pheatmap object (invisibly).
 #' @export
@@ -21,17 +24,20 @@
 #'
 #' @examples
 #' \dontrun{
-#'   # Standard run
-#'   sample_distance_heatmap(my_obj, color_by = "condition")
+#'    # Standard run
+#'    sample_distance_heatmap(my_obj, color_by = "condition")
 #'
-#'   # Customize using standard pheatmap arguments (via ...)
-#'   sample_distance_heatmap(my_obj, color_by = "condition",
-#'                           fontsize = 14,
-#'                           main = "Custom Title")
+#'    # Custom Title and Heatmap Colors
+#'    sample_distance_heatmap(my_obj, color_by = "condition",
+#'                            title = "My Project Heatmap",
+#'                            colors = colorRampPalette(c("white", "red"))(100))
 #' }
 sample_distance_heatmap <- function(bs_obj,
                                     color_by,
                                     min_gene_counts = 10,
+                                    colors = NULL,
+                                    title = "Sample-to-sample distance (Sorted by Group)",
+                                    ann_colors = NULL,
                                     ...) {
 
   # 1. Validate Object
@@ -83,28 +89,36 @@ sample_distance_heatmap <- function(bs_obj,
   )
   colnames(annotation_df) <- color_by
 
-  # 7. Prepare Colors
-  group_levels <- levels(annotation_df[[color_by]])
-  base_cols <- c('#de425b', '#488f31', '#329db3')
+  # 7. Prepare Defaults (if user didn't provide them)
 
-  if (length(group_levels) > length(base_cols)) {
-    base_cols <- grDevices::rainbow(length(group_levels))
+  # Default Heatmap Colors (Blues)
+  if (is.null(colors)) {
+    colors <- grDevices::colorRampPalette(RColorBrewer::brewer.pal(9, "Blues"))(255)
   }
 
-  group_colors <- stats::setNames(base_cols[seq_along(group_levels)], group_levels)
-  ann_colors <- list()
-  ann_colors[[color_by]] <- group_colors
+  # Default Annotation Colors (Auto-generate if NULL)
+  if (is.null(ann_colors)) {
+    group_levels <- levels(annotation_df[[color_by]])
+    base_cols <- c('#de425b', '#488f31', '#329db3')
+
+    if (length(group_levels) > length(base_cols)) {
+      base_cols <- grDevices::rainbow(length(group_levels))
+    }
+
+    group_colors <- stats::setNames(base_cols[seq_along(group_levels)], group_levels)
+    ann_colors <- list()
+    ann_colors[[color_by]] <- group_colors
+  }
 
   # 8. Generate Heatmap
   # Note: clustering is disabled to respect the sorted group order
-  # The '...' argument allows users to pass extras like fontsize, main, etc.
   pheatmap::pheatmap(sampleDistMatrix,
                      annotation_row = annotation_df,
                      annotation_col = annotation_df,
                      cluster_rows = FALSE,
                      cluster_cols = FALSE,
-                     col = grDevices::colorRampPalette(RColorBrewer::brewer.pal(9, "Blues"))(255),
-                     annotation_colors = ann_colors,
-                     main = "Sample-to-sample distance (Sorted by Group)",
+                     col = colors,              # Uses user or default colors
+                     annotation_colors = ann_colors, # Uses user or default colors
+                     main = title,              # Uses user or default title
                      ...)
 }
