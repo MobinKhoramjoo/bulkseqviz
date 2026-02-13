@@ -27,7 +27,7 @@ The dataset used in this example is [**GSE298714**](https://www.ncbi.nlm.nih.gov
 
 First, we load the core package and necessary helper libraries for data retrieval and manipulation.
 
-```{r}         
+```{r} 
 devtools::install_github("MobinKhoramjoo/bulkseqviz") 
 library(bulkseqviz) 
 library(GEOquery)   # For downloading data from NCBI 
