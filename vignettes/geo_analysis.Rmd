@@ -135,7 +135,6 @@ overall_count_boxplot(bs_obj, # created bulkseqviz object
                       group_colors = my_color)
 
 # B. Sample-to-Sample Distance Heatmap
-# Checks if biological replicates cluster together
 sample_distance_heatmap(bs_obj, 
                         color_by = "category", 
                         fontsize = 9,
