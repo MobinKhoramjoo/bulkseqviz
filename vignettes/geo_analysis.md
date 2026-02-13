@@ -34,7 +34,7 @@ devtools::install_github("MobinKhoramjoo/bulkseqviz")
 #> 9: dplyr  (1.1.4 -> 1.2.0) [CRAN]
 #> 
 #> ── R CMD build ──────────────────────────────────────────────────────────────────────────────────────────────────────────
-#>          checking for file 'C:\Users\mobin\AppData\Local\Temp\RtmpWQtO4j\remotes514815a08\MobinKhoramjoo-bulkseqviz-48b0a23/DESCRIPTION' ...  ✔  checking for file 'C:\Users\mobin\AppData\Local\Temp\RtmpWQtO4j\remotes514815a08\MobinKhoramjoo-bulkseqviz-48b0a23/DESCRIPTION'
+#>          checking for file 'C:\Users\mobin\AppData\Local\Temp\RtmpYXCVaz\remotesce87455eb0\MobinKhoramjoo-bulkseqviz-41ceb70/DESCRIPTION' ...  ✔  checking for file 'C:\Users\mobin\AppData\Local\Temp\RtmpYXCVaz\remotesce87455eb0\MobinKhoramjoo-bulkseqviz-41ceb70/DESCRIPTION' (498ms)
 #>       ─  preparing 'bulkseqviz':
 #>    checking DESCRIPTION meta-information ...     checking DESCRIPTION meta-information ...   ✔  checking DESCRIPTION meta-information
 #>       ─  checking for LF line-endings in source and make files and shell scripts
@@ -76,11 +76,11 @@ getGEOSuppFiles(gse_id)
 #>                                                                                                               isdir mode
 #> G:/My Drive/Ongoing Projects/Side Projects/bulkseqviz/vignettes/GSE298714/GSE298714_biopsies_exp_count.txt.gz FALSE  666
 #>                                                                                                                             mtime
-#> G:/My Drive/Ongoing Projects/Side Projects/bulkseqviz/vignettes/GSE298714/GSE298714_biopsies_exp_count.txt.gz 2026-02-12 18:22:37
+#> G:/My Drive/Ongoing Projects/Side Projects/bulkseqviz/vignettes/GSE298714/GSE298714_biopsies_exp_count.txt.gz 2026-02-12 19:13:48
 #>                                                                                                                             ctime
 #> G:/My Drive/Ongoing Projects/Side Projects/bulkseqviz/vignettes/GSE298714/GSE298714_biopsies_exp_count.txt.gz 2026-02-12 18:22:35
 #>                                                                                                                             atime
-#> G:/My Drive/Ongoing Projects/Side Projects/bulkseqviz/vignettes/GSE298714/GSE298714_biopsies_exp_count.txt.gz 2026-02-12 18:22:35
+#> G:/My Drive/Ongoing Projects/Side Projects/bulkseqviz/vignettes/GSE298714/GSE298714_biopsies_exp_count.txt.gz 2026-02-12 18:36:49
 #>                                                                                                               exe
 #> G:/My Drive/Ongoing Projects/Side Projects/bulkseqviz/vignettes/GSE298714/GSE298714_biopsies_exp_count.txt.gz  no
 
