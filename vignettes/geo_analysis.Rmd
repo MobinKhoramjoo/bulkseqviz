@@ -2,7 +2,7 @@
 output: rmarkdown::github_document
 ---
 
-```{r, include=FALSE}         
+```{r, include=FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
@@ -27,7 +27,7 @@ The dataset used in this example is [**GSE298714**](https://www.ncbi.nlm.nih.gov
 
 First, we load the core package and necessary helper libraries for data retrieval and manipulation.
 
-```{r} 
+```{r}
 devtools::install_github("MobinKhoramjoo/bulkseqviz") 
 library(bulkseqviz) 
 library(GEOquery)   # For downloading data from NCBI 
@@ -41,7 +41,7 @@ library(biomaRt)    # For gene ID annotation
 
 We start by fetching the metadata (sample information) and the supplementary count files directly from GEO.
 
-```{r}         
+```{r}
 gse_id <- "GSE298714"
 
 # 1. Fetch Metadata
@@ -76,7 +76,7 @@ rm(gse)
 
 Raw RNA-seq data often includes non-coding RNAs or pseudogenes. For this analysis, we want to filter the dataset to keep only **protein-coding genes** using Ensembl annotations.
 
-```{r}         
+```{r}
 # Connect to Ensembl BioMart
 mart <- useMart("ensembl", dataset = "hsapiens_gene_ensembl")
 
@@ -110,7 +110,7 @@ if(!all(colnames(filtered_counts_df) == rownames(metadata))) {
 
 We wrap the cleaned counts and metadata into the `bulkseq` object. This creates a unified container that handles downstream normalization and plotting automatically.
 
-```{r}         
+```{r}
 bs_obj <- create_bulkseqvis_object(counts = filtered_counts_df, metadata = metadata)
 
 # Print object summary
@@ -121,7 +121,7 @@ print(bs_obj)
 
 Before running statistics, we assess the quality of the data. We define a custom color palette to keep visualizations consistent across all plots.
 
-```{r}         
+```{r}
 # Define custom colors
 my_color <- c('LMP' = 'lightblue', 'NST' = 'pink', 'VI' = 'purple')
 # Define custom order
@@ -144,7 +144,7 @@ sample_distance_heatmap(bs_obj,
 
 We explore the data structure using linear (PCA) and non-linear (UMAP, t-SNE) techniques.
 
-```{r}         
+```{r}
 # PCA (2D)
 plot_pca_2d(bs_obj, 
             color_by = "category",
@@ -171,7 +171,7 @@ plot_tsne_2d(bs_obj,
 
 We perform differential expression analysis using `DESeq2`. Here we perform two pairwise comparisons against the "LMP" control group.
 
-```{r}         
+```{r}
 # Contrast 1: NST vs LMP
 bs_obj <- DEG(bs_obj, 
               design_col = "category", 
@@ -187,7 +187,7 @@ bs_obj <- DEG(bs_obj,
 
 ## 7. Visualizing Results
 
-```{r}         
+```{r}
 # Bar Plot Summary
 plot_deg_bar(bs_obj,
              method = "padj",
@@ -213,7 +213,7 @@ plot_fcvsfc(bs_obj,
 
 We select the top 5 significant genes from the first comparison and visualize their expression.
 
-```{r}         
+```{r}
 # Extract top 5 genes
 target_genes <- bs_obj$DE_results$NST_vs_LMP %>% 
   dplyr::arrange(padj) %>% 
