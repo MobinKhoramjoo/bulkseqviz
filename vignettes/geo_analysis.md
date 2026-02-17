@@ -3,7 +3,7 @@
 
 ## Introduction
 
-This tutorial demonstrates an example analysis using `bulkseqvis`.
+This tutorial demonstrates an example analysis using `bulkseqviz`.
 
 We will download a raw RNA-seq dataset from the NCBI Gene Expression
 Omnibus (GEO), clean the data, and generate publication-ready
